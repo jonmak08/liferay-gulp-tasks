@@ -33,10 +33,15 @@ module.exports = function(gulp, opt_options) {
 		return options.artifactName || require(options.packageJsonPath).name;
 	};
 
+	var getRandomNumber = function() {
+		return Math.floor(Math.random() * 10000000000000);
+	};
+
 	var getVersion = function(config) {
 		var version = require(options.packageJsonPath).version;
+		var snapshot = '-SNAPSHOT-' + getRandomNumber();
 
-		return (config && config.snapshot) ? version + '-SNAPSHOT' : version;
+		return (config && config.snapshot) ? version + snapshot : version;
 	};
 
 	gulp.task('clean-maven-dist', function(callback) {
