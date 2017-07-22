@@ -9,7 +9,6 @@ var prompt = require('gulp-prompt');
 var runSequence = require('run-sequence');
 
 module.exports = function(gulp, opt_options) {
-	var webjarPath;
 	var options = opt_options || {};
 	options.artifactIdPrefix = options.artifactIdPrefix || 'com.liferay.webjars.';
 	options.artifactSrc = options.artifactSrc || ['**/*', '!node_modules/', '!node_modules/**'];
@@ -43,6 +42,8 @@ module.exports = function(gulp, opt_options) {
 
 		return (config && config.snapshot) ? version + snapshot : version;
 	};
+  
+  var webjarPath;
 
 	gulp.task('clean-maven-dist', function(callback) {
 		del('maven-dist').then(function() {
