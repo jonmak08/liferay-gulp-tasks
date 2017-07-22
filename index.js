@@ -1,11 +1,15 @@
 'use strict';
 
+var cheerio = require('gulp-cheerio');
 var del = require('del');
+var gutil = require('gulp-util');
 var maven = require('gulp-maven-deploy');
 var path = require('path');
+var prompt = require('gulp-prompt');
 var runSequence = require('run-sequence');
 
 module.exports = function(gulp, opt_options) {
+	var webjarPath;
 	var options = opt_options || {};
 	options.artifactIdPrefix = options.artifactIdPrefix || 'com.liferay.webjars.';
 	options.artifactSrc = options.artifactSrc || ['**/*', '!node_modules/', '!node_modules/**'];
@@ -108,8 +112,34 @@ module.exports = function(gulp, opt_options) {
 		}));
 	});
 
+	gulp.task('maven-init', function() {
+			var homeDir = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+
+			return gulp.src('./node_modules/liferay-gulp-tasks/settings.xml')
+					.pipe(prompt.prompt(
+							[
+									{
+											type: 'input',
+											message: 'Please define the path where you want to create the webjar: ',
+											name: 'webjarPath'
+									}
+							],
+							function(response) {
+									webjarPath = response.webjarPath;
+									gutil.log('Path for the webjar: ' + webjarPath);
+							}
+			))
+			.pipe(cheerio({
+					run: function ($, file) {
+							$('localRepository').text(webjarPath)
+							gutil.log($('localRepository').text());
+					}
+			}))
+			.pipe(gulp.dest(path.resolve(homeDir, '.m2')));
+	});
+
 	gulp.task('maven-install', function(done) {
-		runSequence('prepare-maven-snapshot', 'install-maven-snapshot', 'clean-maven-dist', done);
+		runSequence('maven-init', 'prepare-maven-snapshot', 'install-maven-snapshot', 'clean-maven-dist', done);
 	});
 
 	gulp.task('maven-publish', function(done) {
