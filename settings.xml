@@ -14,12 +14,6 @@
 			<username>username</username>
 			<password>user-password</password>
 		</server>
-		<server>
-			<id>repo-name</id>
-			<username>username</username>
-			<password>user-password</password>
-		</server>
-	</servers>
 
 	<mirrors/>
 	<proxies/>
