@@ -120,7 +120,7 @@ module.exports = function(gulp, opt_options) {
 				[
 					{
 						type: 'input',
-						message: 'PLEASE DEFINE THE FULL PATH WHERE YOU WANT TO CREATE THE WEBJAR: ',
+						message: 'THE DEFAULT PATH FOR THE WEBJAR IS ${user.home}/.m2/repository. IF YOU WOULD LIKE TO USE A DIFFERENT PATH, PLEASE DEFINE IT HERE: ',
 						name: 'webjarPath'
 					}
 				],
