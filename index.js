@@ -42,8 +42,6 @@ module.exports = function(gulp, opt_options) {
 		return (config && config.snapshot) ? version + snapshot : version;
 	};
 
-  var webjarPath;
-
 	gulp.task('clean-maven-dist', function(callback) {
 		del('maven-dist').then(function() {
 			callback();
@@ -56,6 +54,36 @@ module.exports = function(gulp, opt_options) {
 				path.join('maven-dist/META-INF/resources/webjars', getName(), getVersion({snapshot: true}))
 		));
 	});
+
+	gulp.task('init-maven-snapshot', function() {
+		var webjarPath;
+
+		var homeDir = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+
+		return gulp.src('./node_modules/liferay-gulp-tasks/settings.xml')
+			.pipe(prompt.prompt(
+				[
+					{
+						type: 'input',
+						message: 'Please input the full path where you want this WebJar created, if different from the default (${user.home}/.m2/repository):',
+						name: 'webjarPath'
+					}
+				],
+				function(response) {
+					webjarPath = response.webjarPath;
+				}
+		))
+		.pipe(cheerio({
+			run: function ($, file) {
+				$('localRepository').text(webjarPath);
+			},
+			parserOptions: {
+				xmlMode: true
+			}
+		}))
+		.pipe(gulp.dest(path.resolve(homeDir, '.m2')));
+	});
+
 
 	gulp.task('install-maven-snapshot', function() {
 		var snapshotConfig = { snapshot: true };
@@ -112,35 +140,8 @@ module.exports = function(gulp, opt_options) {
 		}));
 	});
 
-	gulp.task('maven-init', function() {
-		var homeDir = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-
-		return gulp.src('./node_modules/liferay-gulp-tasks/settings.xml')
-			.pipe(prompt.prompt(
-				[
-					{
-						type: 'input',
-						message: 'THE DEFAULT PATH FOR THE WEBJAR IS ${user.home}/.m2/repository. IF YOU WOULD LIKE TO USE A DIFFERENT PATH, PLEASE DEFINE IT HERE: ',
-						name: 'webjarPath'
-					}
-				],
-				function(response) {
-					webjarPath = response.webjarPath;
-				}
-		))
-		.pipe(cheerio({
-			run: function ($, file) {
-				$('localRepository').text(webjarPath);
-			},
-			parserOptions: {
-				xmlMode: true
-			}
-		}))
-		.pipe(gulp.dest(path.resolve(homeDir, '.m2')));
-	});
-
 	gulp.task('maven-install', function(done) {
-		runSequence('maven-init', 'prepare-maven-snapshot', 'install-maven-snapshot', 'clean-maven-dist', done);
+		runSequence('init-maven-snapshot', 'prepare-maven-snapshot', 'install-maven-snapshot', 'clean-maven-dist', done);
 	});
 
 	gulp.task('maven-publish', function(done) {
