@@ -2,6 +2,7 @@
 
 var cheerio = require('gulp-cheerio');
 var del = require('del');
+var fs = require('file-system');
 var maven = require('gulp-maven-deploy');
 var path = require('path');
 var prompt = require('gulp-prompt');
@@ -43,7 +44,7 @@ module.exports = function(gulp, opt_options) {
 	};
 
 	gulp.task('clean-maven-dist', function(callback) {
-		del('maven-dist').then(function() {
+		del(['maven-dist', './node_modules/liferay-gulp-tasks/settings.xml']).then(function() {
 			callback();
 		});
 	});
@@ -59,6 +60,9 @@ module.exports = function(gulp, opt_options) {
 		var webjarPath;
 
 		var homeDir = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+
+		fs.writeFile('./node_modules/liferay-gulp-tasks/settings.xml',
+		'<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd"><localRepository></localRepository> <interactiveMode/><usePluginRegistry/><offline/><pluginGroups/><servers><server><id>repo-name</id><username>username</username><password>user-password</password></server><mirrors/><proxies/><profiles/><activeProfiles/></settings>')
 
 		return gulp.src('./node_modules/liferay-gulp-tasks/settings.xml')
 			.pipe(prompt.prompt(
